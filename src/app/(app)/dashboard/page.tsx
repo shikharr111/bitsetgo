@@ -115,7 +115,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
           <div className="mb-5">
             <Card title={<>Planned vs actual progress by project<Hint text="Percent complete as of the selected date, from the approved baseline and submitted/approved reports. Projects without an approved baseline are omitted." /></>}>
-              <GroupedBars label="Planned versus actual progress per project" unit="%" xKey="project" height={240}
+              <GroupedBars label="Planned versus actual progress per project" unit="%" xKey="project"
                 data={withData.map((r) => ({ project: r.project.code, planned: r.plannedPct, actual: r.actualPct }))}
                 series={[{ key: "planned", name: "Planned", color: "planned" }, { key: "actual", name: "Actual", color: "actual" }]} />
             </Card>
