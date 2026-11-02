@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Card, Empty, Flash, HealthBadge, Hint, PageHeader, ProgressBar, ReportStatusBadge, Stat, TableWrap, Alert } from "@/components/ui";
-import { GroupedBars } from "@/components/charts";
 import { summarizeProjects, summarizeResources } from "@/lib/server/dashboard";
 import { getMemberships, requireUser, isUuid, type ProjectRow } from "@/lib/server/session";
 import { fmtDate, fmtDays, fmtPct, fmtPp, REPORT_STATUS_LABELS } from "@/lib/format";
@@ -111,14 +110,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <Stat label="Delayed" value={counts.delayed} tone="bad" />
             <Stat label="Planned (avg)" value={fmtPct(planned)} hint="Equal-weight average of projects with data" />
             <Stat label="Actual (avg)" value={fmtPct(actual)} hint={withData.length < allRows.length ? `${allRows.length - withData.length} project(s) have no approved baseline` : undefined} />
-          </div>
-
-          <div className="mb-5">
-            <Card title={<>Planned vs actual progress by project<Hint text="Percent complete as of the selected date, from the approved baseline and submitted/approved reports. Projects without an approved baseline are omitted." /></>}>
-              <GroupedBars label="Planned versus actual progress per project" unit="%" xKey="project"
-                data={withData.map((r) => ({ project: r.project.code, planned: r.plannedPct, actual: r.actualPct }))}
-                series={[{ key: "planned", name: "Planned", color: "planned" }, { key: "actual", name: "Actual", color: "actual" }]} />
-            </Card>
           </div>
 
           <Card title="Projects" padded={false} className="mb-5">
