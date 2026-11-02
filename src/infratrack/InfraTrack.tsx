@@ -5239,15 +5239,9 @@ function Dashboard({ theme, project, projects, tracker, summary: s, setView, use
         <Card theme={theme}>
           <SectionTitle theme={theme} title="Activities" sub={s.act ? `${s.act.rows.length} tracked` : "None added yet"} right={<Button theme={theme} small kind="ghost" onClick={() => setView("activities")}>Open</Button>} />
           {!s.act ? <div style={{ fontFamily: FONT_UI, fontSize: 13, color: theme.textMuted }}>Add activities like Earthwork or Paving to see which ones are on track.</div> : (
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ width: 150, height: 150 }}>
-                <LoopRC><PieChart><Pie data={actCounts} dataKey="value" nameKey="name" innerRadius={42} outerRadius={68} stroke="none">
-                  {actCounts.map(x => <Cell key={x.name} fill={actColor[x.name] || theme.textFaint} />)}</Pie><Tooltip contentStyle={chartTip(theme)} /></PieChart></LoopRC>
-              </div>
-              <div style={{ flex: 1 }}>
-                {actCounts.map(x => (<div key={x.name} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: FONT_UI, fontSize: 12.5, color: theme.text, padding: "3px 0" }}>
-                  <span style={{ width: 9, height: 9, borderRadius: 2, background: actColor[x.name] || theme.textFaint }} />{x.name}<span style={{ marginLeft: "auto", fontFamily: FONT_MONO }}>{x.value}</span></div>))}
-              </div>
+            <div>
+              {actCounts.map(x => (<div key={x.name} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: FONT_UI, fontSize: 12.5, color: theme.text, padding: "3px 0" }}>
+                <span style={{ width: 9, height: 9, borderRadius: 2, background: actColor[x.name] || theme.textFaint }} />{x.name}<span style={{ marginLeft: "auto", fontFamily: FONT_MONO }}>{x.value}</span></div>))}
             </div>)}
         </Card>
       </div>
