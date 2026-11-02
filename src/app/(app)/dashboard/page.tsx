@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Card, Empty, Flash, HealthBadge, Hint, PageHeader, ProgressBar, ReportStatusBadge, Stat, TableWrap, Alert } from "@/components/ui";
 import { GroupedBars } from "@/components/charts";
 import { summarizeProjects, summarizeResources } from "@/lib/server/dashboard";
-import { delayTrendByMonth } from "@/lib/analytics/analytics";
 import { getMemberships, requireUser, isUuid, type ProjectRow } from "@/lib/server/session";
 import { fmtDate, fmtDays, fmtPct, fmtPp, REPORT_STATUS_LABELS } from "@/lib/format";
 import { todayIn } from "@/lib/forms";
@@ -47,12 +46,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const unreviewed = (unreviewedRes?.data ?? []) as { id: string; project_id: string; category: string; start_date: string; description: string }[];
   const awaiting = awaitingRes?.count ?? 0;
 
-  const [{ data: trendRaw }, resources] = await Promise.all([
-    ids.length ? supabase.from("delay_events").select("project_id, start_date, end_date, duration_working_days, review_status").in("project_id", ids).order("start_date", { ascending: false }).limit(3000) : Promise.resolve({ data: [] }),
-    summarizeResources(supabase, allRows, 10),
-  ]);
-  const calById = new Map(allRows.map((r) => [r.project.id, r.bundle.input.calendar]));
-  const trend = delayTrendByMonth((trendRaw ?? []) as never, (id) => calById.get(id) ?? { workingWeekdays: [1, 2, 3, 4, 5, 6], holidays: [] }).slice(-12);
+  const resources = await summarizeResources(supabase, allRows, 10);
 
   const counts = Object.fromEntries(HEALTH.map((h) => [h, allRows.filter((r) => r.health === h).length])) as Record<(typeof HEALTH)[number], number>;
   const withData = allRows.filter((r) => r.plannedPct !== null && r.actualPct !== null);
@@ -119,16 +113,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <Stat label="Actual (avg)" value={fmtPct(actual)} hint={withData.length < allRows.length ? `${allRows.length - withData.length} project(s) have no approved baseline` : undefined} />
           </div>
 
-          <div className="mb-5 grid gap-5 lg:grid-cols-2">
+          <div className="mb-5">
             <Card title={<>Planned vs actual progress by project<Hint text="Percent complete as of the selected date, from the approved baseline and submitted/approved reports. Projects without an approved baseline are omitted." /></>}>
-              <GroupedBars label="Planned versus actual progress per project" unit="%" xKey="project"
+              <GroupedBars label="Planned versus actual progress per project" unit="%" xKey="project" height={240}
                 data={withData.map((r) => ({ project: r.project.code, planned: r.plannedPct, actual: r.actualPct }))}
                 series={[{ key: "planned", name: "Planned", color: "planned" }, { key: "actual", name: "Actual", color: "actual" }]} />
-            </Card>
-            <Card title={<>Delay trend: working days lost per month<Hint text="Sum of reported delay events by the month they started. Dismissed events are excluded; unreviewed events are included but shown separately from confirmed ones. Overlapping events are summed." /></>}>
-              <GroupedBars label="Working days lost to delay events per month" unit="wd" xKey="month"
-                data={trend.map((t) => ({ month: t.month, all: t.workingDays, confirmed: t.confirmedWorkingDays }))}
-                series={[{ key: "all", name: "All non-dismissed", color: "warn" }, { key: "confirmed", name: "Confirmed", color: "bad" }]} />
             </Card>
           </div>
 
